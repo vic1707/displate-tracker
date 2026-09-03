@@ -1,0 +1,6 @@
+{
+	"json.schemaDownload.trustedDomains": {
+		"https://biomejs.dev": true
+	},
+	"editor.defaultFormatter": "biomejs.biome"
+}
