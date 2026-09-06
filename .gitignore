@@ -1,3 +1,5 @@
+snapshots_cache
+
 # dependencies (bun install)
 node_modules
 
