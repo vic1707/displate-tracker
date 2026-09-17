@@ -17,10 +17,7 @@ const date = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 const time = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 const percent = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 });
 const number = new Intl.NumberFormat();
-const HISTORY_URL =
-	typeof location !== "undefined" && location.hostname === "vic1707.github.io"
-		? "https://raw.githubusercontent.com/vic1707/displate-tracker/main/web/promo_history.json"
-		: "./promo_history.json";
+const HISTORY_URL = "https://raw.githubusercontent.com/vic1707/displate-tracker/refs/heads/main/web/promo_history.json"; // "./promo_history.json";
 
 export interface PromoRow {
 	id: string;
