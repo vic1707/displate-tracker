@@ -1,13 +1,14 @@
 {
 	"compilerOptions": {
 		// Environment setup & latest features
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "DOM"],
 		"target": "ESNext",
 		"module": "Preserve",
 		"moduleDetection": "force",
 		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
 		"allowJs": true,
-		"types": ["bun"],
+		"types": ["bun", "temporal-polyfill/types/global"],
 		// Bundler mode
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,

@@ -1,13 +1,20 @@
 import * as v from "valibot";
+import { AppError } from "./error.ts";
 import { Entry } from "./localCache.ts";
+import { log } from "./logger.ts";
+
+export type WaybackErrorCode = "invalid-snapshot-list" | "snapshot-list-request-failed";
+export class WaybackError extends AppError<WaybackErrorCode> {}
 
 export class WaybackService {
 	constructor(public readonly targetUrl: string) {}
 
 	public async cachedSnapshots() {
-		const { success, output: snapshots, issues } = await this.availableSnapshots();
+		const result = await this.availableSnapshots();
+		if (result instanceof WaybackError) return result;
+		const { success, output: snapshots, issues } = result;
 		if (!success) {
-			throw new Error(`Invalid Wayback snapshot list:\n${v.summarize(issues)}`);
+			return new WaybackError(`Invalid Wayback snapshot list:\n${v.summarize(issues)}`, "invalid-snapshot-list");
 		}
 
 		return {
@@ -16,20 +23,29 @@ export class WaybackService {
 		};
 	}
 
-	private availableSnapshots() {
+	private async availableSnapshots() {
 		const url = new URL("https://web.archive.org/cdx/search/cdx");
 		url.searchParams.set("url", this.targetUrl);
 		url.searchParams.set("fl", "timestamp,original");
 		url.searchParams.set("filter", "statuscode:200");
 		url.searchParams.set("collapse", "timestamp:8");
 		url.searchParams.set("output", "json");
+		log.debug({ url: url.toString() }, "Fetching Wayback snapshot list");
 
-		return fetch(url)
-			.then((r) => {
-				if (!r.ok) throw new Error(`Wayback snapshot list request failed: HTTP ${r.status} ${r.statusText}`);
-				return r.json();
-			})
-			.then((json) => v.safeParse(SnapShotListSchema, json));
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				return new WaybackError(
+					`Wayback snapshot list request failed: HTTP ${response.status} ${response.statusText}`,
+					"snapshot-list-request-failed",
+				);
+			}
+			return v.safeParse(SnapShotListSchema, await response.json());
+		} catch (cause) {
+			return new WaybackError("Wayback snapshot list request failed", "snapshot-list-request-failed", "error", {
+				cause,
+			});
+		}
 	}
 }
 
@@ -67,3 +83,5 @@ const SnapShotListSchema = v.pipe(
 	),
 	v.transform(([_header, ...rest]) => rest),
 );
+
+export const waybackTimestampToInstant = (wb: string): Temporal.Instant => v.parse(WaybackTimeSchema, wb).date;

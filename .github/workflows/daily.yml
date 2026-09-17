@@ -1,0 +1,84 @@
+name: Capture current promotion
+
+on:
+  schedule:
+    - cron: "5 2,10,18 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: promo-history
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    permissions:
+      contents: write
+      issues: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+      - run: bun install --frozen-lockfile
+      - name: Capture promotion
+        shell: bash
+        env:
+          DAILY_HTML_DUMP: ${{ runner.temp }}/daily.html
+        run: bun run daily 2>&1 | tee "$RUNNER_TEMP/daily.log"
+      - name: Commit updated history
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            git add web/promo_history.json
+            git diff --cached --quiet && exit 0
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: update promo history"
+            gh auth setup-git
+            git push
+          } 2>&1 | tee -a "$RUNNER_TEMP/daily.log"
+      - name: Upload failure diagnostics
+        if: failure()
+        id: diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: daily-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/daily.log
+            ${{ runner.temp }}/daily.html
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Open failure issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
+          DIAGNOSTICS_URL: ${{ steps.diagnostics.outputs.artifact-url }}
+        run: |
+          {
+            printf 'Daily promotion capture failed.\n\n[Workflow logs](%s)\n' "$RUN_URL"
+            if [ -n "$DIAGNOSTICS_URL" ]; then
+              printf '\n[Diagnostics: log and available HTML](%s) (expires after 7 days).\n' "$DIAGNOSTICS_URL"
+            fi
+            if [ -f "$RUNNER_TEMP/daily.log" ]; then
+              printf '\n### Last error output\n\n```text\n'
+              tail -c 12000 "$RUNNER_TEMP/daily.log" | sed -E 's/\x1B\[[0-9;]*[[:alpha:]]//g' | tr '\140' '\047'
+              printf '\n```\n'
+            else
+              printf '\nCapture did not produce a log; see the failed step in the workflow logs.\n'
+            fi
+          } > "$RUNNER_TEMP/daily-issue.md"
+          gh issue create --title "Daily promotion capture failed (run $GITHUB_RUN_ID, attempt $GITHUB_RUN_ATTEMPT)" \
+            --body-file "$RUNNER_TEMP/daily-issue.md" --assignee vic1707

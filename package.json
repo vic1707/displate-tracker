@@ -2,9 +2,12 @@
 	"name": "displate",
 	"private": true,
 	"scripts": {
-		"check": "biome check src",
-		"check:fix": "biome check --write src",
+		"build:web": "bun build web/app.tsx --outdir dist --minify --entry-naming '[name].[ext]' --asset-naming '[name].[ext]' && cp web/index.html web/promo_history.json dist/",
+		"check": "biome check src web",
+		"check:fix": "biome check --write src web",
+		"daily": "bun run src/bin/daily.ts",
 		"scrapper": "bun run src/bin/scrapper.ts",
+		"preview": "bun run build:web && bunx --bun serve dist -nl 3000",
 		"tsc": "tsc"
 	},
 	"devDependencies": {
@@ -16,7 +19,11 @@
 		"typescript": "=7.0.2"
 	},
 	"dependencies": {
+		"@fullcalendar/preact": "=7.1.0",
+		"linkedom": "=0.18.13",
 		"pino": "=10.3.1",
+		"preact": "=10.29.8",
+		"temporal-polyfill": "=1.0.5",
 		"valibot": "=1.5.0"
 	}
 }
