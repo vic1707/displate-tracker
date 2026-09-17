@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import * as v from "valibot";
 import { PromoParseError } from "./error.ts";
 import { parsePromo } from "./index.ts";
-import { EndDateSchema, formatPromo, type PromoDetails } from "./promo.ts";
+import { EndDateSchema, formatPromo, type PromoDetails, PromoDetailsSchema } from "./promo.ts";
 
 test("parses current conditional shipping", () => {
 	const promotion = {
@@ -32,6 +32,16 @@ test("parses current conditional shipping", () => {
 	expect(parse({ ...promotion, steps: [{ minQuantity: 3 }] })?.offers).toEqual([
 		{ kind: "shipping", condition: { kind: "minimum-quantity", quantity: 3 }, freeShipping: true },
 	]);
+});
+
+test("keeps persisted promo source last", () => {
+	const promo = v.parse(PromoDetailsSchema, {
+		_source: "wayback",
+		offers: [],
+		endDate: { kind: "unknown", reason: "not-published" },
+		startDate: { kind: "unknown", reason: "not-published" },
+	});
+	expect(Object.keys(promo).at(-1)).toBe("_source");
 });
 
 test("classifies Wayback interstitials as warnings", () => {

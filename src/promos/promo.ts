@@ -53,12 +53,12 @@ export const EndDateSchema = v.union([
 
 // TODO: strictObject?
 export const PromoDetailsSchema = v.object({
-	_source: v.optional(v.picklist(["wayback", "displate"])),
 	code: v.optional(v.string()), // TODO: if no code => automatic. may be better repr
 	description: v.optional(v.string()),
 	offers: v.array(PromoOfferSchema),
 	endDate: EndDateSchema,
 	startDate: StartDateSchema,
+	_source: v.optional(v.picklist(["wayback", "displate"])),
 });
 
 export type PromoOffer = v.InferOutput<typeof PromoOfferSchema>;
