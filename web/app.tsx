@@ -18,6 +18,9 @@ const time = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle
 const percent = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 });
 const number = new Intl.NumberFormat();
 const HISTORY_URL = "https://raw.githubusercontent.com/vic1707/displate-tracker/refs/heads/main/web/promo_history.json"; // "./promo_history.json";
+const CHECK_URL =
+	"https://api.github.com/repos/vic1707/displate-tracker/actions/workflows/daily.yml/runs?status=success&per_page=1";
+const relativeTime = new Intl.RelativeTimeFormat(undefined, { numeric: "always" });
 
 export interface PromoRow {
 	id: string;
@@ -221,6 +224,13 @@ function datesLabel(row: PromoRow): string {
 	return `${start}. ${end}. Local time (${date.resolvedOptions().timeZone}).`;
 }
 
+export function endsIn(end: Temporal.Instant, now: Temporal.Instant): string {
+	const milliseconds = end.epochMilliseconds - now.epochMilliseconds;
+	if (milliseconds < 3_600_000) return `Ends ${relativeTime.format(Math.ceil(milliseconds / 60_000), "minute")}`;
+	if (milliseconds < 172_800_000) return `Ends ${relativeTime.format(Math.ceil(milliseconds / 3_600_000), "hour")}`;
+	return `Ends ${relativeTime.format(Math.ceil(milliseconds / DAY), "day")}`;
+}
+
 function color(value: number | null, shipping: boolean): string {
 	if (value === null) return shipping ? "#ad2860" : "#616671";
 	if (value >= 40) return "#762ba2";
@@ -229,9 +239,10 @@ function color(value: number | null, shipping: boolean): string {
 	return "#a34509";
 }
 
-function Archive({ rows }: { rows: Array<PromoRow> }) {
+function Archive({ rows, lastChecked }: { rows: Array<PromoRow>; lastChecked: number | null }) {
 	const [kind, setKind] = useState("all");
 	const [selected, setSelected] = useState<PromoRow | null>(null);
+	const [copied, setCopied] = useState(false);
 	const dialog = useRef<HTMLDialogElement>(null);
 	useEffect(() => {
 		if (selected && !dialog.current?.open) dialog.current?.showModal();
@@ -243,9 +254,8 @@ function Archive({ rows }: { rows: Array<PromoRow> }) {
 	const latest = dated.findLast((row) => row.start.epochMilliseconds <= Date.now()) ?? dated.at(-1) ?? fallback;
 	const now = Temporal.Now.instant();
 	const currentPromo = promotionAt(rows, now);
-	const featured = currentPromo ?? latest;
-	const discount = maxDiscount(featured);
-	const shipping = featured.promo.offers.some((offer) => offer.kind === "shipping");
+	const discount = currentPromo ? maxDiscount(currentPromo) : null;
+	const shipping = currentPromo?.promo.offers.some((offer) => offer.kind === "shipping") ?? false;
 	const historical = lastYearWindow(rows, now);
 	const tiers = compareTiers(rows, historical.best, now);
 	const comparableTiers = tiers.filter((tier) => tier.current !== null && tier.historical !== null);
@@ -280,8 +290,9 @@ function Archive({ rows }: { rows: Array<PromoRow> }) {
 	const first = dated.at(0);
 	const last = dated.at(-1);
 
-	const comparison =
-		betterTiers > 0
+	const comparison = !currentPromo
+		? "No active recorded promotion to compare."
+		: betterTiers > 0
 			? `${betterTiers === comparableTiers.length ? "Last year was better at every comparable tier." : `Last year was better at ${number.format(betterTiers)} of ${number.format(comparableTiers.length)} comparable tiers.`} Waiting may be worthwhile.`
 			: comparableTiers.length
 				? "No comparable tier was better in this window last year."
@@ -289,93 +300,70 @@ function Archive({ rows }: { rows: Array<PromoRow> }) {
 
 	return (
 		<>
-			<section id="history" class="history">
-				<div class="section-heading">
-					<div>
-						<p class="eyebrow">Promotion history</p>
-						<h2>Promotion calendar</h2>
-					</div>
-					<label>
-						Offer{" "}
-						<select value={kind} onChange={(event) => setKind(event.currentTarget.value)}>
-							<option value="all">All promotions</option>
-							<option value="discount">Discounts</option>
-							<option value="shipping">Free shipping</option>
-						</select>
-					</label>
-				</div>
-				<p class="small">
-					{number.format(rows.length)} campaigns
-					{first && last
-						? ` / ${date.format(first.start.epochMilliseconds)} - ${date.format(last.start.epochMilliseconds)}`
-						: ""}
+			{lastChecked !== null && (
+				<p class="freshness small">
+					Last successful check:{" "}
+					<time dateTime={new Date(lastChecked).toISOString()}>{time.format(lastChecked)}</time>
 				</p>
-				<div class="calendar">
-					<FullCalendar
-						plugins={[monarchPlugin]}
-						locales={allLocales}
-						locale={navigator.language}
-						initialDate={new Date(latest.start?.epochMilliseconds ?? Date.now())}
-						initialView="dayGridMonth"
-						headerToolbar={{
-							start: "prev,next today",
-							center: "title",
-							end: "",
-						}}
-						footerToolbar={{
-							start: "",
-							center: "dayGridMonth,multiMonthYear timeGridWeek,listYear",
-							end: "",
-						}}
-						height="auto"
-						fixedWeekCount={false}
-						dayMaxEvents={3}
-						eventDisplay="block"
-						nextDayThreshold="00:00:00"
-						allDayText="Unknown end"
-						slotEventOverlap={false}
-						views={{ dayGridMonth: { displayEventTime: false }, timeGridWeek: { displayEventEnd: true } }}
-						events={events}
-						eventClick={(info: EventClickInfo) => setSelected(info.event.extendedProps.row as PromoRow)}
-					/>
-				</div>
-				<p class="legend small">
-					<span class="top">40%+</span>
-					<span class="strong">30-39%</span>
-					<span class="medium">20-29%</span>
-					<span class="low">Under 20%</span>
-					<span class="shipping">Free shipping</span>
-					<span class="mixed-key">Discount + shipping</span>
-					<span class="other">Unknown offer</span>
-				</p>
-				<p class="small">
-					Colors show the highest advertised discount. Conditions apply. Dashed borders mark uncertain dates.
-					Month includes every day touched by an offer; Week and details show precise times.
-				</p>
-			</section>
-
-			<section class="overview" aria-label="Latest promotion comparison">
+			)}
+			<section class="overview" aria-label="Current promotion comparison">
 				<article
-					class={`featured${shipping && discount !== null ? " mixed" : ""}`}
-					style={{ backgroundColor: color(discount, shipping) }}
+					class={`featured${currentPromo ? "" : " inactive"}${shipping && discount !== null ? " mixed" : ""}`}
+					style={currentPromo ? { backgroundColor: color(discount, shipping) } : undefined}
 				>
-					<p class="eyebrow">{currentPromo ? "Current recorded promotion" : "Latest recorded promotion"}</p>
-					<h2>{featured.promo.code || "Automatic promotion"}</h2>
-					<p class="big-number">
-						{discount !== null ? `Up to ${pct(discount)}` : shipping ? "Free shipping" : "No offer details"}
-					</p>
-					<ul>
-						{featured.promo.offers.length ? (
-							featured.promo.offers.map((offer) => <li key={offerLabel(offer)}>{offerLabel(offer)}</li>)
-						) : (
-							<li>No offer details recorded.</li>
-						)}
-					</ul>
-					{featured.promo.description && <p class="small">{featured.promo.description}</p>}
-					<p class="small">{datesLabel(featured)}</p>
-					<button class="text-button" type="button" onClick={() => setSelected(featured)}>
-						View full record
-					</button>
+					{currentPromo ? (
+						<>
+							<p class="eyebrow">Current recorded promotion</p>
+							<div class="promo-heading">
+								<h2>{currentPromo.promo.code || "Automatic promotion"}</h2>
+								{currentPromo.promo.code && (
+									<button
+										type="button"
+										onClick={() =>
+											navigator.clipboard
+												.writeText(currentPromo.promo.code ?? "")
+												.then(() => setCopied(true))
+												.catch(() => {})
+										}
+									>
+										{copied ? "Copied" : "Copy code"}
+									</button>
+								)}
+							</div>
+							<p class="big-number">
+								{discount !== null
+									? `Up to ${pct(discount)}`
+									: shipping
+										? "Free shipping"
+										: "No offer details"}
+							</p>
+							<p class="countdown">{currentPromo.end && endsIn(currentPromo.end, now)}</p>
+							<ul>
+								{currentPromo.promo.offers.length ? (
+									currentPromo.promo.offers.map((offer) => (
+										<li key={offerLabel(offer)}>{offerLabel(offer)}</li>
+									))
+								) : (
+									<li>No offer details recorded.</li>
+								)}
+							</ul>
+							{currentPromo.promo.description && <p class="small">{currentPromo.promo.description}</p>}
+							<p class="small">{datesLabel(currentPromo)}</p>
+							<button class="text-button" type="button" onClick={() => setSelected(currentPromo)}>
+								View full record
+							</button>
+						</>
+					) : (
+						<>
+							<p class="eyebrow">Current promotion</p>
+							<h2>No active recorded promotion</h2>
+							<p>The tracker last recorded {latest.promo.code || "an automatic promotion"}.</p>
+							<p class="small">{datesLabel(latest)}</p>
+							<button class="text-button" type="button" onClick={() => setSelected(latest)}>
+								View latest record
+							</button>
+						</>
+					)}
 				</article>
 				<div class="comparison">
 					<p class="eyebrow">Equivalent window last year</p>
@@ -435,6 +423,71 @@ function Archive({ rows }: { rows: Array<PromoRow> }) {
 				</div>
 			</section>
 
+			<section id="history" class="history">
+				<div class="section-heading">
+					<div>
+						<p class="eyebrow">Promotion history</p>
+						<h2>Promotion calendar</h2>
+					</div>
+					<label>
+						Offer{" "}
+						<select value={kind} onChange={(event) => setKind(event.currentTarget.value)}>
+							<option value="all">All promotions</option>
+							<option value="discount">Discounts</option>
+							<option value="shipping">Free shipping</option>
+						</select>
+					</label>
+				</div>
+				<p class="small">
+					{number.format(rows.length)} campaigns
+					{first && last
+						? ` / ${date.format(first.start.epochMilliseconds)} - ${date.format(last.start.epochMilliseconds)}`
+						: ""}
+				</p>
+				<div class="calendar">
+					<FullCalendar
+						plugins={[monarchPlugin]}
+						locales={allLocales}
+						locale={navigator.language}
+						initialDate={new Date(latest.start?.epochMilliseconds ?? Date.now())}
+						initialView={matchMedia("(max-width: 700px)").matches ? "listYear" : "dayGridMonth"}
+						headerToolbar={{
+							start: "prev,next today",
+							center: "title",
+							end: "",
+						}}
+						footerToolbar={{
+							start: "",
+							center: "dayGridMonth,multiMonthYear timeGridWeek,listYear",
+							end: "",
+						}}
+						height="auto"
+						fixedWeekCount={false}
+						dayMaxEvents={3}
+						eventDisplay="block"
+						nextDayThreshold="00:00:00"
+						allDayText="Unknown end"
+						slotEventOverlap={false}
+						views={{ dayGridMonth: { displayEventTime: false }, timeGridWeek: { displayEventEnd: true } }}
+						events={events}
+						eventClick={(info: EventClickInfo) => setSelected(info.event.extendedProps.row as PromoRow)}
+					/>
+				</div>
+				<p class="legend small">
+					<span class="top">40%+</span>
+					<span class="strong">30-39%</span>
+					<span class="medium">20-29%</span>
+					<span class="low">Under 20%</span>
+					<span class="shipping">Free shipping</span>
+					<span class="mixed-key">Discount + shipping</span>
+					<span class="other">Unknown offer</span>
+				</p>
+				<p class="small">
+					Colors show the highest advertised discount. Conditions apply. Dashed borders mark uncertain dates.
+					Month includes every day touched by an offer; Week and details show precise times.
+				</p>
+			</section>
+
 			<dialog ref={dialog} onClose={() => setSelected(null)} aria-labelledby="record-title">
 				<form method="dialog">
 					<button type="submit">Close</button>
@@ -481,6 +534,7 @@ function App() {
 		return "system";
 	});
 	const [history, setHistory] = useState<Array<PromoDetails> | null>(null);
+	const [lastChecked, setLastChecked] = useState<number | null>(null);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
@@ -506,6 +560,22 @@ function App() {
 			})
 			.then((data) => setHistory(parseHistory(data)))
 			.catch((cause: unknown) => setError(cause instanceof Error ? cause.message : String(cause)));
+	}, []);
+
+	useEffect(() => {
+		fetch(CHECK_URL)
+			.then((response) => response.json())
+			.then((data: unknown) => {
+				const result = v.safeParse(
+					v.object({ workflow_runs: v.array(v.object({ updated_at: v.string() })) }),
+					data,
+				);
+				const checked = result.success
+					? Date.parse(result.output.workflow_runs[0]?.updated_at ?? "")
+					: Number.NaN;
+				if (!Number.isNaN(checked)) setLastChecked(checked);
+			})
+			.catch(() => {});
 	}, []);
 
 	const rows = history ? readHistory(history) : [];
@@ -548,7 +618,7 @@ function App() {
 				) : history === null ? (
 					<p>Loading archive...</p>
 				) : rows.length ? (
-					<Archive rows={rows} />
+					<Archive rows={rows} lastChecked={lastChecked} />
 				) : (
 					<p role="alert" class="error">
 						The promotion archive is empty.

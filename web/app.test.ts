@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import {
 	calendarDates,
 	compareTiers,
+	endsIn,
 	lastYearWindow,
 	maxDiscount,
 	offerLabel,
@@ -28,6 +29,13 @@ function record(startDate: unknown, endDate: unknown, offers: Array<unknown>, co
 	if (!row) throw new Error("Expected fixture row");
 	return row;
 }
+
+test("promotion countdown uses useful units", () => {
+	const now = Temporal.Instant.from("2026-09-17T12:00:00Z");
+	expect(endsIn(Temporal.Instant.from("2026-09-17T12:30:00Z"), now)).toBe("Ends in 30 minutes");
+	expect(endsIn(Temporal.Instant.from("2026-09-17T14:00:00Z"), now)).toBe("Ends in 2 hours");
+	expect(endsIn(Temporal.Instant.from("2026-09-20T12:00:00Z"), now)).toBe("Ends in 3 days");
+});
 
 test("schema parsing, display and active interval use synthetic records", () => {
 	const row = record("2026-09-07T08:00:00Z", "2026-09-14T08:00:00Z", [discount(35, "unknown", true), shipping]);

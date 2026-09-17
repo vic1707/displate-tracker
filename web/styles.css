@@ -126,6 +126,9 @@ footer,
 .history {
 	margin-top: 2rem;
 }
+.freshness {
+	margin: 2rem 0 0.75rem;
+}
 .section-heading label {
 	font-size: 0.8rem;
 }
@@ -185,6 +188,9 @@ footer,
 	border: 1px solid var(--line);
 	margin-top: 2.5rem;
 }
+.freshness + .overview {
+	margin-top: 0;
+}
 .featured,
 .comparison {
 	padding: 2rem;
@@ -193,8 +199,24 @@ footer,
 .featured {
 	color: #fff;
 }
+.featured.inactive {
+	color: var(--ink);
+	background: var(--surface);
+}
 .featured h2 {
 	font-size: 1.5rem;
+}
+.promo-heading {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+}
+.promo-heading button {
+	flex: none;
+	color: inherit;
+	background: transparent;
+	border-color: currentColor;
 }
 .featured .small {
 	color: inherit;
@@ -205,6 +227,9 @@ footer,
 	line-height: 1.1;
 	letter-spacing: -0.07em;
 	margin: 1rem 0 0;
+}
+.countdown {
+	font-weight: 700;
 }
 .text-button {
 	border: 0;
