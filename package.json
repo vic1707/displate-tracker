@@ -2,7 +2,7 @@
 	"name": "displate",
 	"private": true,
 	"scripts": {
-		"build:web": "bun build web/app.tsx --outdir dist --minify --entry-naming '[name].[ext]' --asset-naming '[name].[ext]' && cp web/index.html web/promo_history.json dist/",
+		"build:web": "bun build web/app.tsx --outdir dist --minify --entry-naming '[name].[ext]' --asset-naming '[name].[ext]' && cp web/index.html web/promo_history.json web/CNAME dist/",
 		"check": "biome check src web",
 		"check:fix": "biome check --write src web",
 		"daily": "bun run src/bin/daily.ts",
