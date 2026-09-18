@@ -20196,5 +20196,29 @@
 		"endDate": "2026-09-18T07:59:59Z",
 		"startDate": "2026-09-17T08:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "DEAL",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 1
+				},
+				"kind": "discount",
+				"discountPercent": 15
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 2
+				},
+				"kind": "discount",
+				"discountPercent": 25
+			}
+		],
+		"endDate": "2026-09-21T07:59:59Z",
+		"startDate": "2026-09-18T08:00:00Z",
+		"_source": "displate"
 	}
 ]
