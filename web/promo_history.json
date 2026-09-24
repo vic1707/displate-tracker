@@ -20268,5 +20268,37 @@
 		"endDate": "2026-09-24T07:59:59Z",
 		"startDate": "2026-09-23T08:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "FALL",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 1
+				},
+				"kind": "discount",
+				"discountPercent": 20
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 2
+				},
+				"kind": "discount",
+				"discountPercent": 25
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 3
+				},
+				"kind": "discount",
+				"discountPercent": 30
+			}
+		],
+		"endDate": "2026-09-29T07:59:59Z",
+		"startDate": "2026-09-24T08:00:00Z",
+		"_source": "displate"
 	}
 ]
