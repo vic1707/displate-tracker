@@ -20313,5 +20313,21 @@
 		"endDate": "2026-09-30T07:59:59Z",
 		"startDate": "2026-09-29T08:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "TWO25",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 2
+				},
+				"kind": "discount",
+				"discountPercent": 25
+			}
+		],
+		"endDate": "2026-10-01T07:59:59Z",
+		"startDate": "2026-09-30T08:00:00Z",
+		"_source": "displate"
 	}
 ]
