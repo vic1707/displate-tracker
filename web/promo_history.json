@@ -20465,5 +20465,37 @@
 		"endDate": "2026-10-06T07:59:59Z",
 		"startDate": "2026-10-05T08:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "SUMMON",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 1
+				},
+				"kind": "discount",
+				"discountPercent": 20
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 2
+				},
+				"kind": "discount",
+				"discountPercent": 25
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 3
+				},
+				"kind": "discount",
+				"discountPercent": 30
+			}
+		],
+		"endDate": "2026-10-12T07:59:59Z",
+		"startDate": "2026-10-06T08:00:00Z",
+		"_source": "displate"
 	}
 ]
