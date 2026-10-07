@@ -43,6 +43,46 @@ test("merges extensions but splits changed offers", () => {
 	]);
 });
 
+test("published campaigns deduplicate across intervening promotions and empty snapshots", () => {
+	const snake: PromoDetails = {
+		code: "SNAKE",
+		offers: [{ kind: "discount", condition: "unconditional", discountPercent: 27 }],
+		startDate: Temporal.Instant.from("2025-01-28T09:00:00Z"),
+		endDate: Temporal.Instant.from("2025-01-31T09:00:00Z"),
+	};
+	const changed: PromoDetails = {
+		...snake,
+		offers: [{ kind: "discount", condition: "unconditional", discountPercent: 26 }],
+		startDate: Temporal.Instant.from("2025-01-31T09:10:00Z"),
+		endDate: Temporal.Instant.from("2025-02-03T09:00:00Z"),
+	};
+	const love: PromoDetails = {
+		...snake,
+		code: "LOVE",
+		startDate: Temporal.Instant.from("2025-02-13T09:00:00Z"),
+		endDate: Temporal.Instant.from("2025-02-17T09:00:00Z"),
+	};
+	const snapshots = (
+		[
+			["2025-01-28", [snake]],
+			["2025-01-31", [changed]],
+			["2025-02-02", [snake]],
+			["2025-02-14", [love]],
+			["2025-02-15", [snake]],
+			["2025-02-16", [love]],
+			["2025-02-17", []],
+			["2025-02-18", [snake]],
+		] satisfies Array<[string, Array<PromoDetails>]>
+	).map(([date, promos]) => ({
+		date: Temporal.Instant.from(`${date}T12:00:00Z`),
+		promos,
+		source: "wayback" as const,
+	}));
+	const expected = [snake, changed, love].map((promo) => ({ ...promo, _source: "wayback" as const }));
+	expect(mergePromoHistory(snapshots)).toEqual(expected);
+	expect(reconcilePromoHistory(snapshots, [...expected, ...expected])).toEqual(expected);
+});
+
 test("a Wayback rebuild keeps daily campaigns in archive gaps and after its newest snapshot", () => {
 	const campaign = (
 		code: string,

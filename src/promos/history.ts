@@ -20,7 +20,13 @@ export function mergePromoHistory(snapshots: Array<PromoSnapshot>): Array<PromoD
 	for (const snapshot of snapshots.toSorted((a, b) => Temporal.Instant.compare(a.date, b.date))) {
 		current = snapshot.promos.map((value) => {
 			const promo = withSupposedStart(snapshot.date, { ...value, _source: snapshot.source });
-			const previous = current.find((previous) => isSameCampaign(previous, promo));
+			// ponytail: only published starts identify campaigns across snapshot gaps.
+			const candidates = promo.startDate instanceof Temporal.Instant ? history : current;
+			const previous = candidates.find(
+				(previous) =>
+					(current.includes(previous) || previous.startDate instanceof Temporal.Instant) &&
+					isSameCampaign(previous, promo),
+			);
 			if (previous) {
 				const merged = mergeCampaign(previous, promo);
 				history[history.indexOf(previous)] = merged;

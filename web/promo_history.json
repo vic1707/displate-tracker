@@ -15639,70 +15639,6 @@
 					"quantity": 2
 				},
 				"kind": "discount",
-				"discountPercent": 27
-			},
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 3
-				},
-				"kind": "discount",
-				"discountPercent": 30
-			}
-		],
-		"endDate": "2025-01-31T09:00:00Z",
-		"startDate": "2025-01-28T09:00:00Z",
-		"_source": "wayback"
-	},
-	{
-		"code": "SNAKE",
-		"offers": [
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 1
-				},
-				"kind": "discount",
-				"discountPercent": 23
-			},
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 2
-				},
-				"kind": "discount",
-				"discountPercent": 27
-			},
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 3
-				},
-				"kind": "discount",
-				"discountPercent": 30
-			}
-		],
-		"endDate": "2025-01-31T09:00:00Z",
-		"startDate": "2025-01-28T09:00:00Z",
-		"_source": "wayback"
-	},
-	{
-		"code": "SNAKE",
-		"offers": [
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 1
-				},
-				"kind": "discount",
-				"discountPercent": 23
-			},
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 2
-				},
-				"kind": "discount",
 				"discountPercent": 26
 			},
 			{
@@ -15716,30 +15652,6 @@
 		],
 		"endDate": "2025-02-03T09:00:00Z",
 		"startDate": "2025-01-31T09:10:00Z",
-		"_source": "wayback"
-	},
-	{
-		"code": "LOVE",
-		"offers": [
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 1
-				},
-				"kind": "discount",
-				"discountPercent": 22
-			},
-			{
-				"condition": {
-					"kind": "minimum-quantity",
-					"quantity": 2
-				},
-				"kind": "discount",
-				"discountPercent": 33
-			}
-		],
-		"endDate": "2025-02-17T09:00:00Z",
-		"startDate": "2025-02-13T09:00:00Z",
 		"_source": "wayback"
 	},
 	{
