@@ -40,12 +40,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           git add web/promo_history.json
-          git diff --cached --quiet && exit 0
+          if git diff --cached --quiet; then
+            printf 'No history changes; no commit created.\n' | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: rebuild promo history"
           gh auth setup-git
           git push
+          printf 'History committed and pushed: %s/%s/commit/%s\n' "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$(git rev-parse HEAD)" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload snapshot cache
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
