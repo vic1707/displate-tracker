@@ -1,6 +1,7 @@
 {
 	"json.schemaDownload.trustedDomains": {
-		"https://biomejs.dev": true
+		"https://biomejs.dev": true,
+        "https://unpkg.com/": true
 	},
 	"editor.defaultFormatter": "biomejs.biome"
 }
