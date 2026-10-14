@@ -17,7 +17,7 @@ const date = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 const time = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 const percent = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 });
 const number = new Intl.NumberFormat();
-const HISTORY_URL = "https://raw.githubusercontent.com/vic1707/displate-tracker/refs/heads/main/web/promo_history.json"; // "./promo_history.json";
+const HISTORY_URL = "https://api.github.com/repos/vic1707/displate-tracker/contents/web/promo_history.json"; // "./promo_history.json";
 const CHECK_URL =
 	"https://api.github.com/repos/vic1707/displate-tracker/actions/workflows/daily.yml/runs?status=success&per_page=1";
 const relativeTime = new Intl.RelativeTimeFormat(undefined, { numeric: "always" });
@@ -553,7 +553,12 @@ function App() {
 	}, [theme]);
 
 	useEffect(() => {
-		fetch(HISTORY_URL, { cache: "no-store" })
+		fetch(HISTORY_URL, {
+			cache: "no-store",
+			headers: {
+				Accept: "application/vnd.github.raw+json",
+			},
+		})
 			.then((response) => {
 				if (!response.ok) throw new Error(`Could not load promo_history.json (HTTP ${response.status}).`);
 				return response.json();
