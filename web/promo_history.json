@@ -20438,5 +20438,21 @@
 		"endDate": "2026-10-14T07:59:59Z",
 		"startDate": "2026-10-13T08:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "TWO20",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 2
+				},
+				"kind": "discount",
+				"discountPercent": 20
+			}
+		],
+		"endDate": "2026-10-15T07:59:59Z",
+		"startDate": "2026-10-14T08:00:00Z",
+		"_source": "displate"
 	}
 ]
