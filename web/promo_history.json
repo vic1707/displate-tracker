@@ -20566,5 +20566,21 @@
 		"endDate": "2026-10-22T07:59:59Z",
 		"startDate": "2026-10-20T08:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "OFF20",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 1
+				},
+				"kind": "discount",
+				"discountPercent": 20
+			}
+		],
+		"endDate": "2026-10-23T07:59:59Z",
+		"startDate": "2026-10-22T08:00:00Z",
+		"_source": "displate"
 	}
 ]
