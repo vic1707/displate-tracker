@@ -73,7 +73,10 @@ bun run tsc
 
 ## Daily schedule
 
-Cloudflare dispatches the daily workflow at **00:05, 08:02, 08:17, and 16:05 UTC**. 
+Cloudflare dispatches the daily workflow **every hour at :05 UTC** (`5 * * * *`).
+Polling throughout the day avoids depending on Displate's rollover time, time zones, or daylight saving changes.
+New promotions should be captured within about an hour of appearing in the fetched page, plus any workflow queue delay.
+Capture logs include exact promotion start/end timestamps, the observation time, and Cloudflare cache status/age.
 Requires GitHub Actions secret `CLOUDFLARE_API_TOKEN`, variable `CLOUDFLARE_ACCOUNT_ID`, and fine-grained PAT secret `WORKER_GITHUB_TOKEN` (this repo only, **Actions: Read and write**). 
 The deploy workflow installs that PAT in Cloudflare as Worker secret `GITHUB_TOKEN`.
 

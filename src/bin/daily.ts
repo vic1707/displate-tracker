@@ -38,6 +38,15 @@ async function updateDailyPromo(): Promise<AppError | undefined> {
 		}
 		return promos;
 	}
+	log.info(
+		{
+			observedAt: date.toString(),
+			cacheStatus: response.headers.get("cf-cache-status"),
+			cacheAge: response.headers.get("age"),
+			promos,
+		},
+		"Captured current Displate promotion details",
+	);
 
 	const history = await readPromoHistory();
 	if (history instanceof AppError) return history;
