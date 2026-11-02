@@ -20638,5 +20638,18 @@
 		"endDate": "2026-11-02T09:00:00Z",
 		"startDate": "2026-10-26T09:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "FREE",
+		"offers": [
+			{
+				"condition": "unconditional",
+				"kind": "shipping",
+				"freeShipping": true
+			}
+		],
+		"endDate": "2026-11-03T08:59:59Z",
+		"startDate": "2026-11-02T09:00:00Z",
+		"_source": "displate"
 	}
 ]
