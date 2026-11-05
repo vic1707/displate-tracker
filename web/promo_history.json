@@ -4505,7 +4505,7 @@
 	},
 	{
 		"code": "EARLYBF",
-		"description": "Buy 1-2 get 25% OFF | 3+ 33% OFFUse code: EARLYBF | Ends: SOON!",
+		"description": "Buy 1-2 Posters get 25% OFF | 3+ get 33% OFF | Use code: EARLYBF | Ends: SOON!",
 		"offers": [
 			{
 				"condition": {
@@ -20637,7 +20637,7 @@
 		],
 		"endDate": "2026-11-02T09:00:00Z",
 		"startDate": "2026-10-26T09:00:00Z",
-		"_source": "displate"
+		"_source": "wayback"
 	},
 	{
 		"code": "FREE",
@@ -20650,7 +20650,7 @@
 		],
 		"endDate": "2026-11-03T08:59:59Z",
 		"startDate": "2026-11-02T09:00:00Z",
-		"_source": "displate"
+		"_source": "wayback"
 	},
 	{
 		"code": "SAVE25",
@@ -20690,7 +20690,7 @@
 		],
 		"endDate": "2026-11-05T08:59:00Z",
 		"startDate": "2026-11-04T09:00:00Z",
-		"_source": "displate"
+		"_source": "wayback"
 	},
 	{
 		"code": "BLACK",
