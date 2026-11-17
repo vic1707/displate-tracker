@@ -20835,5 +20835,37 @@
 		"endDate": "2026-11-17T08:59:59Z",
 		"startDate": "2026-11-16T09:00:00Z",
 		"_source": "displate"
+	},
+	{
+		"code": "BLACK",
+		"offers": [
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 1
+				},
+				"kind": "discount",
+				"discountPercent": 33
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 3
+				},
+				"kind": "discount",
+				"discountPercent": 37
+			},
+			{
+				"condition": {
+					"kind": "minimum-quantity",
+					"quantity": 5
+				},
+				"kind": "discount",
+				"discountPercent": 41
+			}
+		],
+		"endDate": "2026-11-28T08:59:59Z",
+		"startDate": "2026-11-17T09:00:00Z",
+		"_source": "displate"
 	}
 ]
